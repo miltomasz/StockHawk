@@ -37,6 +37,10 @@ public final class PrefUtils {
 
     }
 
+    public static void addToStocks(Context context, String symbol) {
+        editStockPref(context, symbol, true);
+    }
+
     private static void editStockPref(Context context, String symbol, Boolean add) {
         String key = context.getString(R.string.pref_stocks_key);
         Set<String> stocks = getStocks(context);
@@ -54,7 +58,18 @@ public final class PrefUtils {
     }
 
     public static void addStock(Context context, String symbol) {
-        editStockPref(context, symbol, true);
+        String key = context.getString(R.string.pref_stock_key);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(key, symbol);
+        editor.apply();
+    }
+
+    public static String getStock(Context context) {
+        String key = context.getString(R.string.pref_stock_key);
+        String defaultValue = null;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getString(key, defaultValue);
     }
 
     public static void removeStock(Context context, String symbol) {

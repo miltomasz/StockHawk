@@ -8,7 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v4.content.LocalBroadcastManager;
 
+import com.udacity.stockhawk.MockUtils;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 
@@ -25,13 +27,13 @@ import timber.log.Timber;
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
 import yahoofinance.histquotes.HistoricalQuote;
-import yahoofinance.histquotes.Interval;
 import yahoofinance.quotes.stock.StockQuote;
 
 public final class QuoteSyncJob {
 
+    public static final String ACTION_DATA_UPDATED = "com.udacity.stockhawk.ACTION_DATA_UPDATED";
+    public static final String MISSING_STOCK = "missingStock";
     private static final int ONE_OFF_ID = 2;
-    private static final String ACTION_DATA_UPDATED = "com.udacity.stockhawk.ACTION_DATA_UPDATED";
     private static final int PERIOD = 300000;
     private static final int INITIAL_BACKOFF = 10000;
     private static final int PERIODIC_ID = 1;
@@ -40,7 +42,7 @@ public final class QuoteSyncJob {
     private QuoteSyncJob() {
     }
 
-    static void getQuotes(Context context) {
+    static void getQuotes(final Context context) {
 
         Timber.d("Running sync job");
 
@@ -49,6 +51,9 @@ public final class QuoteSyncJob {
         from.add(Calendar.YEAR, -YEARS_OF_HISTORY);
 
         try {
+            String stockAdded = PrefUtils.getStock(context);
+
+            checkStockIsValid(context, stockAdded);
 
             Set<String> stockPref = PrefUtils.getStocks(context);
             Set<String> stockCopy = new HashSet<>();
@@ -71,7 +76,6 @@ public final class QuoteSyncJob {
             while (iterator.hasNext()) {
                 String symbol = iterator.next();
 
-
                 Stock stock = quotes.get(symbol);
                 StockQuote quote = stock.getQuote();
 
@@ -81,8 +85,13 @@ public final class QuoteSyncJob {
 
                 // WARNING! Don't request historical data for a stock that doesn't exist!
                 // The request will hang forever X_x
-                List<HistoricalQuote> history = stock.getHistory(from, to, Interval.WEEKLY);
+                // List<HistoricalQuote> history = stock.getHistory(from, to, Interval.WEEKLY);
 
+                // Note for reviewer
+                // Due to the problems with Yahoo API we have commented the line above
+                // and included this one to fetch the history from MockUtils
+                // This should be enough as to develop and review while the API is down
+                List<HistoricalQuote> history = MockUtils.getHistory();
                 StringBuilder historyBuilder = new StringBuilder();
 
                 for (HistoricalQuote it : history) {
@@ -97,7 +106,6 @@ public final class QuoteSyncJob {
                 quoteCV.put(Contract.Quote.COLUMN_PRICE, price);
                 quoteCV.put(Contract.Quote.COLUMN_PERCENTAGE_CHANGE, percentChange);
                 quoteCV.put(Contract.Quote.COLUMN_ABSOLUTE_CHANGE, change);
-
 
                 quoteCV.put(Contract.Quote.COLUMN_HISTORY, historyBuilder.toString());
 
@@ -115,6 +123,21 @@ public final class QuoteSyncJob {
 
         } catch (IOException exception) {
             Timber.e(exception, "Error fetching stock quotes");
+        }
+    }
+
+    private static void checkStockIsValid(Context context, String stockAdded) throws IOException {
+        if (stockAdded != null) {
+            // Call Yahoo api to check if stock exists
+            Stock stock = YahooFinance.get(stockAdded);
+            if (stock.isValid()) {
+                PrefUtils.addToStocks(context, stockAdded);
+            } else {
+                Intent intent = new Intent("NO_STOCK_FOUND");
+                intent.putExtra(MISSING_STOCK, stockAdded);
+                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+                PrefUtils.addStock(context, null);
+            }
         }
     }
 
