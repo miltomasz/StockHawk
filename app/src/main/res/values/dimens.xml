@@ -9,4 +9,11 @@ http://developer.android.com/guide/topics/appwidgets/index.html#CreatingLayout
     <dimen name="divider_height">0dp</dimen>
     <dimen name="widget_min_height">110dp</dimen>
     <dimen name="widget_max_height">180dp</dimen>
+    <dimen name="change_text_view_padding">3dp</dimen>
+    <dimen name="add_stock_margin">4dp</dimen>
+    <dimen name="add_stock_margin_top">16dp</dimen>
+    <dimen name="floating_button_margin">16dp</dimen>
+    <dimen name="floating_button_border">0dp</dimen>
+    <dimen name="floating_button_elevation">6dp</dimen>
+    <dimen name="floating_button_translationZ">12dp</dimen>
 </resources>

@@ -26,14 +26,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
+        android:layout_margin="@dimen/floating_button_margin"
         android:onClick="button"
         android:src="@drawable/fab_plus"
         app:backgroundTint="@color/material_blue_500"
-        app:borderWidth="0dp"
-        app:elevation="6dp"
+        app:borderWidth="@dimen/floating_button_border"
+        app:elevation="@dimen/floating_button_elevation"
         app:fabSize="normal"
-        app:pressedTranslationZ="12dp"
+        app:pressedTranslationZ="@dimen/floating_button_translationZ"
         android:contentDescription="@string/new_stock_button"/>
 
     <TextView

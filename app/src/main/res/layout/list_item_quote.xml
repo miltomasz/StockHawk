@@ -36,8 +36,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/percent_change_pill_green"
-            android:paddingStart="3dp"
-            android:paddingEnd="3dp"
+            android:paddingStart="@dimen/change_text_view_padding"
+            android:paddingEnd="@dimen/change_text_view_padding"
             tools:text="100%" />
     </LinearLayout>
 </LinearLayout>
